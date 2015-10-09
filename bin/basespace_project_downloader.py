@@ -73,7 +73,7 @@ def download_files(href, access_token, output_dir):
             p.wait()
 
             print "\n"
-            if os.path.getsize(target_path) == f_json_obj["Size"]:
+            if os.path.getsize(target_path) != f_json_obj["Size"]:
                 raise Exception("Downloading error. %s incorrect size (%i vs %i)" % (target_path, os.path.getsize(target_path), f_json_obj["Size"]))
 
 
