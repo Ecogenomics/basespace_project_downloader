@@ -68,7 +68,7 @@ def download_files(href, access_token, output_dir):
             wget_url = base_url + ('%s?access_token=%s' % (f_json_obj["HrefContent"], access_token))
 
 
-            print "         Downloading %s to %s....(%i bytes)\n" % (f_json_obj["Path"], target_path, f_json_obj["Size"])
+            print "        Downloading %s to %s....(%i bytes)\n" % (f_json_obj["Path"], target_path, f_json_obj["Size"])
             p = subprocess.Popen(["wget","-O", target_path, wget_url])
             p.wait()
 
