@@ -15,7 +15,7 @@ def parse_args():
     parser = argparse.ArgumentParser(prog='basespace_project_downloader.py')
     parser.add_argument('-p', dest='project_id', required=True,
                         help='Illumina project ID'),
-    parser.add_argument('-a', dest='access_token',
+    parser.add_argument('-a', dest='access_token', required=True,
                         help='Access token (default: read from stdin)'),
     parser.add_argument('-o', dest='output_dir', required=True,
                         help='Output directory')
@@ -94,7 +94,7 @@ if __name__ == '__main__':
 
     sample_hrefs = []
     for sample_json in json_obj["Response"]["Items"]:
-        print "    Sample found - " + sample_json["SampleId"]
+        print "    Sample found - %s (Experiment: %s)" % (sample_json["SampleId"], sample_json["ExperimentName"])
         sample_hrefs.append(sample_json["Href"])
 
     print "Querying Individual Samples: "
@@ -102,7 +102,16 @@ if __name__ == '__main__':
         request = base_url + ("%s?access_token=%s" % (sample_href, args.access_token))
         json_obj = restrequest(request)
 
-        sample_dir = os.path.join(args.output_dir, json_obj["Response"]["SampleId"])
+        
+        base_dir = args.output_dir
+        if json_obj["Response"]["ExperimentName"]:
+             base_dir = os.path.join(args.output_dir, json_obj["Response"]["ExperimentName"])
+             if not os.path.exists(base_dir):
+                 print "    Creating new directory for experiment: %s" % json_obj["Response"]["ExperimentName"]
+                 os.mkdir(base_dir)
+                
+
+        sample_dir = os.path.join(base_dir, json_obj["Response"]["SampleId"])
         if not os.path.exists(sample_dir):
             print "    Creating new directory for sample: %s" % json_obj["Response"]["SampleId"]
             os.mkdir(sample_dir)
