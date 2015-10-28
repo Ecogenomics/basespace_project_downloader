@@ -58,14 +58,21 @@ def download_files(href, access_token, output_dir):
         json_obj = restrequest(request)
 
         for f_json_obj in json_obj['Response']['Items']:
-            target_path = os.path.join(output_dir, f_json_obj["Path"])
+            target_path = os.path.abspath(os.path.join(output_dir, f_json_obj["Path"]))
+            if not target_path.startswith(os.path.abspath(output_dir) + '/'):
+                 raise Exception("Target path is not within the output_dir. JSON returned a strange pathspec? - " + f_json_obj["Path"])
+
             if os.path.exists(target_path):
                 if os.path.getsize(target_path) == f_json_obj["Size"]:
                     print "        %s exists and is the same as BaseSpace's reported size (%i). Skipping...." % (target_path, f_json_obj["Size"])
                     continue
                 print "        %s exists but is not of the correct size. (%i vs %i). Re-downloading..." % (target_path, os.path.getsize(target_path), f_json_obj["Size"])
-
+            else:
+                 directory = os.path.dirname(target_path)
+                 if not os.path.exists(directory):
+                     os.makedirs(directory)
             wget_url = base_url + ('%s?access_token=%s' % (f_json_obj["HrefContent"], access_token))
+
 
 
             print "        Downloading %s to %s....(%i bytes)\n" % (f_json_obj["Path"], target_path, f_json_obj["Size"])
