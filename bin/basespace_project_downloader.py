@@ -95,16 +95,38 @@ if __name__ == '__main__':
 
     print "    Project found - " + json_obj["Response"]["Name"]
 
+    sample_href = json_obj["Response"]["HrefSamples"]
     print "Querying Project Samples: "
-    request = base_url + ("%s?access_token=%s" % (json_obj["Response"]["HrefSamples"], args.access_token))
+    request = base_url + ("%s?access_token=%s&limit=0" % (sample_href, args.access_token))
     json_obj = restrequest(request)
 
+    total_count = json_obj["Response"]["TotalCount"]
+
+    if total_count == 0:
+        print "    No samples found."
+        sys.exit(0)
+
+    print "    %s samples found." % total_count 
+
+    chunk_size = 50
+    print "    Retrieving details in chunks of %s." % chunk_size
+   
     sample_hrefs = []
-    for sample_json in json_obj["Response"]["Items"]:
-        print "    Sample found - %s (Experiment: %s)" % (sample_json["SampleId"], sample_json["ExperimentName"])
-        sample_hrefs.append(sample_json["Href"])
+    for chunk in range(0, ((total_count - 1) / chunk_size) + 1):
+        offset = chunk * chunk_size
+        request = base_url + ("%s?access_token=%s&limit=%s&offset=%s" % (
+            sample_href,
+            args.access_token,
+            chunk_size,
+            offset
+        ))
+        json_obj = restrequest(request)
+        for sample_json in json_obj["Response"]["Items"]:
+             print "    Sample found - %s (Experiment: %s)" % (sample_json["SampleId"], sample_json["ExperimentName"])
+             sample_hrefs.append(sample_json["Href"])
 
     print "Querying Individual Samples: "
+
     for sample_href in sample_hrefs:
         request = base_url + ("%s?access_token=%s" % (sample_href, args.access_token))
         json_obj = restrequest(request)
